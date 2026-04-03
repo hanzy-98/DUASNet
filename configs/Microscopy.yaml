@@ -52,7 +52,7 @@ Test:
     Dataset:
         type: "SegDataset"
         root: "data/Microscopy_TestDataset"     
-        testsets: ['DSB2018']
+        testsets: ['Microscopy']
         transform_list:
             resize:
                 size: [352, 352]
