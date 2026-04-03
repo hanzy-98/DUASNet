@@ -1,5 +1,5 @@
 Model:
-    name: "All_in_one_SegNet" # 模型名称
+    name: "DUASNet"
     channels: 256
     output_stride: 16
     pretrained: True
@@ -7,7 +7,7 @@ Model:
 Train:
     Dataset:
         type: "SegDataset"
-        root: "data/Microscopy_TrainDataset"      #   训练数据集
+        root: "data/Microscopy_TrainDataset"     
         transform_list:
             resize: 
                 size: [352, 352]
@@ -40,18 +40,18 @@ Train:
         mixed_precision: False
     Scheduler:
         type: "PolyLr"
-        epoch: 50  # 迭代epoch轮数  240
+        epoch:   
         gamma: 0.9
         minimum_lr: 1.0e-07
         warmup_iteration: 300
     Checkpoint:
-        checkpoint_epoch: 50  # 训练轮数
-        checkpoint_dir: "snapshots/Microscopy"  # 权重保存路径
+        checkpoint_epoch: 
+        checkpoint_dir: "snapshots/Microscopy" 
     
 Test:
     Dataset:
         type: "SegDataset"
-        root: "data/Microscopy_TestDataset"     #   测试数据集根目录
+        root: "data/Microscopy_TestDataset"     
         testsets: ['DSB2018']
         transform_list:
             resize:
@@ -65,31 +65,14 @@ Test:
         num_workers: 8
         pin_memory: True
     Checkpoint:
-        checkpoint_dir: "snapshots/Microscopy"   # 权重路径
-
+        checkpoint_dir: "snapshots/Microscopy"   
 Eval:
-    gt_root: "data/Microscopy_TestDataset"   # 根目录
-    pred_root: "snapshots/Microscopy"   # 分割结果路径
+    gt_root: "data/Microscopy_TestDataset"   
+    pred_root: "snapshots/Microscopy"   
     result_path: "results/Microscopy"
-    datasets: ['DSB2018']  # 测试集---DSB2018
+    datasets: ['DSB2018']  
     metrics: ['meanDic', 'meanIoU', 'wFm', 'Sm', 'meanEm', 'mae', 'maxEm', 'maxDic', 'maxIoU', 'meanSen', 'maxSen', 'meanSpe', 'maxSpe']
 
 
-
-###### -------Microscopy-----------###########
-#  # 使用单个命令进行训练、测试和评估：
-#  # 单个 GPU
-#  CUDA_VISIBLE_DEVICES=0 python Expr.py --config configs/Microscopy.yaml --verbose --debug
-
-#  # 多个 GPU
-#  CUDA_VISIBLE_DEVICES=0,1 python -m torchrun --nproc_per_node 2 Expr.py --config configs/Microscopy.yaml --verbose --debug
-
-
-
-#  ### 测试
-#  python run/Test.py --config configs/Microscopy.yaml --verbose
-
-#  ### 评估
-#  python run/Eval.py --config configs/Microscopy.yaml --verbose
 
 
