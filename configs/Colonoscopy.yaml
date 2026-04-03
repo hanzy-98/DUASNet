@@ -1,1 +1,105 @@
-wait
+Model:
+    name: "All_in_one_SegNet"  # 改成我们的模型名称
+    channels: 256
+    output_stride: 16
+    pretrained: True
+
+Train:
+    Dataset:
+        type: "SegDataset"
+        root: "data/Colonoscopy_TrainDataset"      #   训练数据集
+        transform_list:
+            resize: 
+                size: [352, 352]
+            random_scale_crop:
+                range: [0.75, 1.25]
+            random_flip:
+                lr: True
+                ud: True
+            random_rotate:
+                range: [0, 359]
+            random_image_enhance:
+                methods: ['contrast', 'sharpness', 'brightness']
+            random_dilation_erosion:
+                kernel_range: [2, 5]
+            tonumpy: NULL
+            normalize: 
+                mean: [0.485, 0.456, 0.406]
+                std: [0.229, 0.224, 0.225]
+            totensor: NULL
+    Dataloader:
+        batch_size: 16
+        shuffle: True
+        num_workers: 8
+        pin_memory: False
+    Optimizer:
+        type: "Adam"
+        lr: 1.0e-04
+        weight_decay: 0.0
+        clip: 0.5
+        mixed_precision: False
+    Scheduler:
+        type: "PolyLr"
+        epoch: 100  # 迭代epoch轮数  100
+        gamma: 0.9
+        minimum_lr: 1.0e-07
+        warmup_iteration: 300
+    Checkpoint:
+        checkpoint_epoch: 50  # 100轮保存一次权重
+        checkpoint_dir: "snapshots/Colonoscopy"  # 权重路径
+    
+Test:
+    Dataset:
+        type: "SegDataset"
+        root: "data/Colonoscopy_TestDataset"     #   测试数据集
+        testsets: ['CVC-300', 'CVC-ClinicDB', 'Kvasir', 'CVC-ColonDB', 'ETIS-LaribPolypDB']
+        transform_list:
+            resize: 
+                size: [352, 352]
+            tonumpy: NULL
+            normalize: 
+                mean: [0.485, 0.456, 0.406]
+                std: [0.229, 0.224, 0.225]
+            totensor: NULL
+    Dataloader:
+        num_workers: 8
+        pin_memory: True
+    Checkpoint:
+        checkpoint_dir: "snapshots/Colonoscopy"   # 权重路径
+
+Eval:
+    gt_root: "data/Colonoscopy_TestDataset"   # 验证集路径
+    pred_root: "snapshots/Colonoscopy"   # 分割结果保存路径
+    result_path: "results/Colonoscopy"  # 结果路径
+    datasets: ['CVC-300', 'CVC-ClinicDB', 'Kvasir', 'CVC-ColonDB', 'ETIS-LaribPolypDB']
+    metrics: ['meanDic', 'meanIoU', 'wFm', 'Sm', 'meanEm', 'mae', 'maxEm', 'maxDic', 'maxIoU', 'meanSen', 'maxSen', 'meanSpe', 'maxSpe']
+
+
+###### -------Colonoscopy-----------###########
+#  # 使用单个命令进行训练、测试和评估：
+#  ---------单个 GPU
+#  CUDA_VISIBLE_DEVICES=1 python Expr.py --config configs/Colonoscopy.yaml --verbose --debug
+
+#  ----------多个 GPU
+#  CUDA_VISIBLE_DEVICES=0,1 python -m torchrun --nproc_per_node 2 Expr.py --config configs/Colonoscopy.yaml --verbose --debug
+
+
+
+#  ----------测试
+#  python run/Test.py --config configs/Colonoscopy.yaml --verbose
+#  ---------评估
+#  python run/Eval.py --config configs/Colonoscopy.yaml --verbose
+
+
+##
+##"""
+#Expr - Colonoscopy            100%|██████████████████████████████████████████████████| 5/5 [18:49<00:00, 225.93s/it]
+#dataset              meanDic    meanIoU    wFm     Sm    meanEm    mae    maxEm    maxDic    maxIoU    meanSen    maxSen    meanSpe    maxSpe
+#-----------------  ---------  ---------  -----  -----  --------  -----  -------  --------  --------  ---------  --------  ---------  --------
+#CVC-300                0.919      0.864  0.913  0.946     0.978  0.004    0.981     0.922     0.868      0.948     1.000      0.994     0.997
+#CVC-ClinicDB           0.937      0.894  0.938  0.948     0.979  0.006    0.982     0.940     0.897      0.957     1.000      0.992     0.996
+#Kvasir                 0.922      0.878  0.919  0.927     0.963  0.022    0.966     0.924     0.881      0.919     1.000      0.977     0.981
+#CVC-ColonDB            0.769      0.703  0.766  0.847     0.879  0.040    0.881     0.772     0.706      0.775     1.000      0.939     0.943
+#ETIS-LaribPolypDB      0.857      0.792  0.849  0.908     0.947  0.007    0.950     0.860     0.795      0.862     1.000      0.973     0.977
+##"""
+
