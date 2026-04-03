@@ -16,18 +16,8 @@ class Baseline(nn.Module):
     def __init__(self, channels=256, output_stride=16, pretrained=True):
     # def __init__(self, channels=16, output_stride=16, pretrained=True):
         super(Baseline, self).__init__()
-        self.resnet = res2net50_v1b_26w_4s(pretrained=pretrained, output_stride=output_stride)
-
-        self.context2 = simple_context(512, channels)
-        self.context3 = simple_context(1024, channels)
-        self.context4 = simple_context(2048, channels)
-
+ 
         self.decoder = simple_decoder(channels)
-
-        self.attention2 = simple_attention(512, 64, 2, 3)
-        self.attention3 = simple_attention(1024, 64, 2, 3)
-        self.attention4 = simple_attention(2048, 256, 3, 5)
-
         self.loss_fn = bce_iou_loss
 
     def forward(self, sample):
